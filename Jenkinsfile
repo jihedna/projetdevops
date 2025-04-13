@@ -8,10 +8,11 @@ pipeline {
     }
 
     environment {
-        PATH = "C:\\Program Files\\Git\\bin;${env.PATH};C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        DOCKERHUB_USER = 'jihedna' // 🛠️ Replace with your Docker Hub username
         FRONTEND_IMAGE = 'frontend_img'
         BACKEND_IMAGE = 'backend_img'
         VERSION = '5.5'
+        PATH = "C:\\Program Files\\Git\\bin;${env.PATH};C:\\Program Files\\Docker\\Docker\\resources\\bin"
     }
 
     stages {
@@ -53,20 +54,42 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh """
-                            docker build -t ${env.BACKEND_IMAGE}:${env.VERSION} ./gestionEmployees
-                            docker build -t ${env.FRONTEND_IMAGE}:${env.VERSION} ./gestionEmployeeFront
+                            docker build -t ${DOCKERHUB_USER}/${BACKEND_IMAGE}:${VERSION} ./gestionEmployees/gestion-employes
+                            docker build -t ${DOCKERHUB_USER}/${FRONTEND_IMAGE}:${VERSION} ./gestionEmployeeFront
                         """
                     } else {
                         bat """
-                            docker build -t %BACKEND_IMAGE%:%VERSION% ./gestionEmployees
-                            docker build -t %FRONTEND_IMAGE%:%VERSION% ./gestionEmployeeFront
+                            docker build -t %DOCKERHUB_USER%/%BACKEND_IMAGE%:%VERSION% ./gestionEmployees/gestion-employes
+                            docker build -t %DOCKERHUB_USER%/%FRONTEND_IMAGE%:%VERSION% ./gestionEmployeeFront
                         """
                     }
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Push Docker Images') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        if (isUnix()) {
+                            sh """
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                docker push ${DOCKERHUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                                docker push ${DOCKERHUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+                            """
+                        } else {
+                            bat """
+                                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                                docker push %DOCKERHUB_USER%/%BACKEND_IMAGE%:%VERSION%
+                                docker push %DOCKERHUB_USER%/%FRONTEND_IMAGE%:%VERSION%
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
             steps {
                 script {
                     if (isUnix()) {
@@ -83,10 +106,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline completed successfully (tests skipped)!"
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo "❌ Pipeline failed. Check the console for more info."
+            echo "❌ Pipeline failed. Check the logs for errors."
         }
     }
 }
