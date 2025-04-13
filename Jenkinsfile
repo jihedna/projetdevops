@@ -69,25 +69,24 @@ pipeline {
 
         stage('Push Docker Images') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        if (isUnix()) {
-                            sh """
-                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                docker push ${DOCKERHUB_USER}/${BACKEND_IMAGE}:${VERSION}
-                                docker push ${DOCKERHUB_USER}/${FRONTEND_IMAGE}:${VERSION}
-                            """
-                        } else {
-                            bat """
-                                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                                docker push %DOCKERHUB_USER%/%BACKEND_IMAGE%:%VERSION%
-                                docker push %DOCKERHUB_USER%/%FRONTEND_IMAGE%:%VERSION%
-                            """
-                        }
+                script {
+                    if (isUnix()) {
+                        sh """
+                            echo "dckr_pat_q2kLN5GhImSZ2rQvmoPX8wtyWkc" | docker login -u "jihed601" --password-stdin
+                            docker push ${DOCKERHUB_USER}/${BACKEND_IMAGE}:${VERSION}
+                            docker push ${DOCKERHUB_USER}/${FRONTEND_IMAGE}:${VERSION}
+                        """
+                    } else {
+                        bat """
+                            echo dckr_pat_q2kLN5GhImSZ2rQvmoPX8wtyWkc | docker login -u jihed601 --password-stdin
+                            docker push %DOCKERHUB_USER%/%BACKEND_IMAGE%:%VERSION%
+                            docker push %DOCKERHUB_USER%/%FRONTEND_IMAGE%:%VERSION%
+                        """
                     }
                 }
             }
         }
+
 
         stage('Deploy with Docker Compose') {
             steps {
