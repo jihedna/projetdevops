@@ -16,7 +16,7 @@ services:
       - backend_frontend_network
 
   frontend:
-    image: jihedna/frontend_img:1.0
+    image: jihedna/frontend_img:5.5
     ports:
       - "4301:80"
     depends_on:
