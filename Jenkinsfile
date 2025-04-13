@@ -48,13 +48,6 @@ pipeline {
             }
         }
 
-        // Optional: keep this if you want to still archive test results later
-        stage('Skip Tests Placeholder') {
-            steps {
-                echo "Tests are currently skipped due to Spring Boot context error."
-            }
-        }
-
         stage('Build Docker Images') {
             steps {
                 script {
