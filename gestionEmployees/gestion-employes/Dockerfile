@@ -3,7 +3,7 @@ FROM maven:3.8.1-openjdk-17 AS build
 WORKDIR /app
 
 # Copy the project files into the container
-COPY gestion-employes /app
+COPY . /app
 
 # (Optional) Check what's in there for debugging
 RUN ls -la /app
