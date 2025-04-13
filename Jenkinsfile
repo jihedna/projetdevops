@@ -1,74 +1,80 @@
 pipeline {
-    agent any
+  agent any
 
-    tools {
-        jdk 'JDK_17'
-        maven 'Maven 3.9.9'
-        nodejs 'NodeJS'
+  environment {
+    DOCKERHUB_CREDENTIALS = credentials('dockerjenkins')
+  }
+
+  stages {
+    stage('🧬 Cloner les sources') {
+      steps {
+        git branch: 'main', url: 'https://github.com/AbirBoukhriss/devops'
+      }
     }
 
-    environment {
-        PATH = "C:\\Program Files\\Git\\bin;${env.PATH};C:\\Program Files\\Docker\\Docker\\resources\\bin"
-        FRONTEND_IMAGE = 'frontend_img'
-        BACKEND_IMAGE = 'backend_img'
-        VERSION = '5.5'
+    stage('🔨 Build Backend avec Maven') {
+      steps {
+        dir('gestionEmployees/gestion-employes') {
+          sh 'chmod +x mvnw'
+          sh './mvnw clean package -DskipTests'
+        }
+      }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/jihedna/projetdevops.git'
-            }
+    stage('⚙ Build Frontend avec Angular') {
+      steps {
+        dir('gestionEmployeeFront') {
+          sh 'npm install --legacy-peer-deps'
+          sh 'npm run build -- --configuration production'
         }
-
-        stage('Build Frontend') {
-            steps {
-                script {
-                    def frontendDir = "${WORKSPACE}/gestionEmployeeFront"
-                    if (isUnix()) {
-                        sh "cd ${frontendDir} && npm install && npm run build --prod"
-                    } else {
-                        bat "cd ${frontendDir} && npm install && npm run build --prod"
-                    }
-                }
-            }
-        }
-
-        // ⬇️ ADD THESE STAGES HERE ⬇️
-
-        stage('Build Backend') {
-            steps {
-                dir('gestionEmployees/gestion-employes') {
-                    script {
-                        if (isUnix()) {
-                            sh 'mvn clean install package'
-                        } else {
-                            bat 'mvn clean install package'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Tests Unitaires') {
-            steps {
-                dir('gestionEmployees/gestion-employes') {
-                    script {
-                        if (isUnix()) {
-                            sh 'mvn test'
-                        } else {
-                            bat 'mvn test'
-                        }
-                    }
-                }
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'target/surefire-reports/*.xml', allowEmptyArchive: true
-                }
-            }
-        }
-
-        // ⬆️ Then continue with your Docker build, deploy, etc.
+      }
     }
+
+    stage('🔐 Authentification DockerHub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerjenkins', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+        }
+      }
+    }
+
+    stage('🐳 Créer les images Docker') {
+      steps {
+        sh 'docker build -t abirboukhris/gestion_employes_springboot ./gestionEmployees'
+        sh 'docker build -t abirboukhris/gestion_employees_angular ./gestionEmployeeFront'
+      }
+    }
+
+    stage('📤 Pousser vers DockerHub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerjenkins', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh """
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push $DOCKER_USER/gestion_employes_springboot
+            docker push $DOCKER_USER/gestion_employees_angular
+          """
+        }
+      }
+    }
+
+    stage('🚀 Déploiement local via Docker Compose') {
+      steps {
+        sh '''
+          cd /var/lib/jenkins/workspace/abirboukhris
+          docker-compose pull
+          docker-compose up -d --remove-orphans
+        '''
+      }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Déploiement réussi !'
+    }
+
+    failure {
+      echo '❌ Échec du pipeline !'
+    }
+  }
 }
