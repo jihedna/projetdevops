@@ -34,91 +34,41 @@ pipeline {
             }
         }
 
+        // ⬇️ ADD THESE STAGES HERE ⬇️
+
         stage('Build Backend') {
             steps {
-                script {
-                    def backendDir = "${WORKSPACE}/gestionEmployees"
-                    if (isUnix()) {
-                        sh "cd ${backendDir} && mvn clean install package"
-                    } else {
-                        bat "cd ${backendDir} && mvn clean install package"
+                dir('gestionEmployees/gestion-employes') {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn clean install package'
+                        } else {
+                            bat 'mvn clean install package'
+                        }
                     }
                 }
             }
         }
 
-        stage('Unit Tests') {
+        stage('Tests Unitaires') {
             steps {
-                script {
-                    def backendDir = "${WORKSPACE}/gestionEmployees"
-                    if (isUnix()) {
-                        sh "cd ${backendDir} && mvn test"
-                    } else {
-                        bat "cd ${backendDir} && mvn test"
+                dir('gestionEmployees/gestion-employes') {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test'
+                        } else {
+                            bat 'mvn test'
+                        }
                     }
                 }
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'gestionEmployees/target/surefire-reports/*.xml', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'target/surefire-reports/*.xml', allowEmptyArchive: true
                 }
             }
         }
 
-        stage('Build Docker Images') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh """
-                            docker build -t ${env.BACKEND_IMAGE}:${env.VERSION} ./gestionEmployees
-                            docker build -t ${env.FRONTEND_IMAGE}:${env.VERSION} ./gestionEmployeeFront
-                        """
-                    } else {
-                        bat """
-                            docker build -t %BACKEND_IMAGE%:%VERSION% ./gestionEmployees
-                            docker build -t %FRONTEND_IMAGE%:%VERSION% ./gestionEmployeeFront
-                        """
-                    }
-                }
-            }
-        }
-
-        // Optional stage for pushing to DockerHub or private registry
-        /*
-        stage('Push Docker Images') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                        sh "docker push ${env.BACKEND_IMAGE}:${env.VERSION}"
-                        sh "docker push ${env.FRONTEND_IMAGE}:${env.VERSION}"
-                    }
-                }
-            }
-        }
-        */
-
-        stage('Deploy') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker-compose -f docker-compose.yml down --remove-orphans'
-                        sh 'docker-compose -f docker-compose.yml up -d'
-                    } else {
-                        bat 'docker-compose -f docker-compose.yml down --remove-orphans'
-                        bat 'docker-compose -f docker-compose.yml up -d'
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo "❌ Build failed! Check logs for more info."
-        }
-        success {
-            echo "✅ Build and deployment completed successfully!"
-        }
+        // ⬆️ Then continue with your Docker build, deploy, etc.
     }
 }
