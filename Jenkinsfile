@@ -34,14 +34,17 @@ pipeline {
             }
         }
 
+        // ⬇️ ADD THESE STAGES HERE ⬇️
+
         stage('Build Backend') {
             steps {
-                script {
-                    def backendDir = "${WORKSPACE}/gestionEmployees"
-                    if (isUnix()) {
-                        sh "cd ${backendDir} && mvn clean install package"
-                    } else {
-                        bat "cd ${backendDir} && mvn clean install package"
+                dir('gestionEmployees/gestion-employes') {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn clean install package'
+                        } else {
+                            bat 'mvn clean install package'
+                        }
                     }
                 }
             }
@@ -49,52 +52,23 @@ pipeline {
 
         stage('Tests Unitaires') {
             steps {
-                script {
-                    def backendDir = "${WORKSPACE}/gestionEmployees"
-                    if (isUnix()) {
-                        sh "cd ${backendDir} && mvn test"
-                    } else {
-                        bat "cd ${backendDir} && mvn test"
+                dir('gestionEmployees/gestion-employes') {
+                    script {
+                        if (isUnix()) {
+                            sh 'mvn test'
+                        } else {
+                            bat 'mvn test'
+                        }
                     }
                 }
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'gestionEmployees/target/surefire-reports/*.xml', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'target/surefire-reports/*.xml', allowEmptyArchive: true
                 }
             }
         }
 
-        stage('Build Docker Images') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh """
-                            docker build -t ${env.BACKEND_IMAGE}:${env.VERSION} ./gestionEmployees
-                            docker build -t ${env.FRONTEND_IMAGE}:${env.VERSION} ./gestionEmployeeFront
-                        """
-                    } else {
-                        bat """
-                            docker build -t %BACKEND_IMAGE%:%VERSION% ./gestionEmployees
-                            docker build -t %FRONTEND_IMAGE%:%VERSION% ./gestionEmployeeFront
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'docker-compose -f docker-compose.yml down --remove-orphans'
-                        sh 'docker-compose -f docker-compose.yml up -d'
-                    } else {
-                        bat 'docker-compose -f docker-compose.yml down --remove-orphans'
-                        bat 'docker-compose -f docker-compose.yml up -d'
-                    }
-                }
-            }
-        }
+        // ⬆️ Then continue with your Docker build, deploy, etc.
     }
 }
