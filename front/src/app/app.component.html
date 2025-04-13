@@ -1,0 +1,26 @@
+<nav class="navbar navbar-expand-lg" style="background-color: #fff0f5; border-bottom: 1px solid #f8cde6;">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" style="color: #000000;" routerLink="/">Gestion des Employés</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border: none;">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" style="color: #000000;" routerLink="/employes" routerLinkActive="active">Employés</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style="color: #000000;" routerLink="/heures-sup" routerLinkActive="active">Heures Sup</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style="color: #000000;" routerLink="/tarif" routerLinkActive="active">Tarifs</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>

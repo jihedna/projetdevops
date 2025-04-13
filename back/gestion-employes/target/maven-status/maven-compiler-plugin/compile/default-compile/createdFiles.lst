@@ -1,0 +1,10 @@
+tn\esprim\gestion_employes\repository\HeuresSupRepository.class
+tn\esprim\gestion_employes\repository\TarifRepository.class
+tn\esprim\gestion_employes\controller\TarifController.class
+tn\esprim\gestion_employes\controller\EmployeController.class
+tn\esprim\gestion_employes\controller\HeuresSupController.class
+tn\esprim\gestion_employes\model\Employe.class
+tn\esprim\gestion_employes\repository\EmployeRepository.class
+tn\esprim\gestion_employes\model\Tarif.class
+tn\esprim\gestion_employes\model\HeuresSup.class
+tn\esprim\gestion_employes\GestionEmployesApplication.class

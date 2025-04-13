@@ -1,0 +1,51 @@
+version: '3.3'
+
+services:
+  backend:
+    image: "gestion_employes_springboot"
+    build:
+      context: ./gestionEmployees
+      dockerfile: gestion-employes/Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/gestion_employes
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_APPLICATION_NAME: gestion-employes
+    depends_on:
+      - mysql
+    networks:
+      - backend_frontend_network
+
+  frontend:
+    image: "gestion_employees_angular"
+    build:
+      context: ./gestionEmployeeFront
+      dockerfile: Dockerfile
+    ports:
+      - "4301:80"
+    depends_on:
+      - backend
+    networks:
+      - backend_frontend_network
+
+  mysql:
+    image: mysql:8.0.41
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gestion_employes
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend_frontend_network
+
+volumes:
+  mysql_data:
+
+networks:
+  backend_frontend_network:
+    driver: bridge
+
