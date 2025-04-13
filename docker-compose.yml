@@ -2,10 +2,7 @@ version: '3.3'
 
 services:
   backend:
-    image: "gestion_employes_springboot"
-    build:
-      context: ./gestionEmployees
-      dockerfile: gestion-employes/Dockerfile
+    image: jihedna/backend_img:5.5
     ports:
       - "8086:8086"
     environment:
@@ -19,10 +16,7 @@ services:
       - backend_frontend_network
 
   frontend:
-    image: "gestion_employees_angular"
-    build:
-      context: ./gestionEmployeeFront
-      dockerfile: Dockerfile
+    image: jihedna/frontend_img:1.0
     ports:
       - "4301:80"
     depends_on:
@@ -48,4 +42,3 @@ volumes:
 networks:
   backend_frontend_network:
     driver: bridge
-
