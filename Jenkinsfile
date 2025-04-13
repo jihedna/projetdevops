@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('🧬 Cloner les sources') {
       steps {
-        git branch: 'main', url: 'https://github.com/AbirBoukhriss/devops'
+        git branch: 'main', url: 'https://github.com/jihedna/projetdevops.git'
       }
     }
 
