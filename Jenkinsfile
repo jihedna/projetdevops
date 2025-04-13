@@ -8,7 +8,7 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_USER = 'jihedna' // 🛠️ Replace with your Docker Hub username
+        DOCKERHUB_USER = 'jihed601' // 🛠️ Replace with your Docker Hub username
         FRONTEND_IMAGE = 'frontend_img'
         BACKEND_IMAGE = 'backend_img'
         VERSION = '5.5'
