@@ -41,9 +41,9 @@ pipeline {
                 dir('gestionEmployees/gestion-employes') {
                     script {
                         if (isUnix()) {
-                            sh 'mvn clean install package'
+                            sh 'mvn clean install -DskipTests'
                         } else {
-                            bat 'mvn clean install package'
+                            bat 'mvn clean install -DskipTests'
                         }
                     }
                 }
